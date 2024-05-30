@@ -1,7 +1,7 @@
 clear; close all;
 load exampleMaps.mat;
 
-% Define the map dimensions and obstacles
+%% Define the map dimensions and obstacles
 map = binaryOccupancyMap(complexMap);
 
 %Create a state validator object for collision checking.
@@ -9,8 +9,8 @@ validator = validatorOccupancyMap;
 
 %Assign the map to the state validator object.
 validator.Map = map;
+%% Plan and Visualize Path
 
-%Plan and Visualize Path
 %Initialize the plannerHybridAStar object with the state validator object. Specify the MinTurningRadius and MotionPrimitiveLength properties of the planner.
 planner = plannerHybridAStar(validator,'MinTurningRadius',3,'MotionPrimitiveLength',4);
 %Define start and goal poses for the vehicle as [x, y, theta] vectors. x and y specify the position in meters, and theta specifies the orientation angle in radians.
@@ -28,8 +28,8 @@ r= differentialDriveKinematics("TrackWidth",0.5,"VehicleInputs","VehicleSpeedHea
 r.WheelSpeedRange = [-10 10]*2*pi;
 %t=0:0.1:1000;
 init=startPose;%initial conditions
+%% Path following controller
 
-% Path following controller
 controller= controllerPurePursuit('DesiredLinearVelocity', 1, 'MaxAngularVelocity', 2);
 controller.Waypoints = refpath.States(:,1:2); 
 controller.LookaheadDistance = 0.5;
@@ -68,3 +68,13 @@ end
 
 plot(pose(end,1), pose(end,2),'bx', 'MarkerSize', 10,'LineWidth',2);% Plot the final position of the robot
 toc %end of time
+
+%% Calculating path metrics for evaluation
+
+pl= pathLength(refpath);
+pathMetricsObj = pathmetrics(refpath,validator);
+pathValid =isPathValid(pathMetricsObj);
+clear = clearance(pathMetricsObj);% minimum clearance of the path.
+smooth = smoothness(pathMetricsObj);% smoothness of the path
+show(pathMetricsObj); %Visualize the minimum clearance of the path
+legend('Planned Path','Minimum Clearance');

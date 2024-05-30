@@ -1,5 +1,4 @@
-clear;
-close all;
+clear ; close all;
 
 % Define the map dimensions and obstacles
 load exampleMaps.mat;
@@ -18,7 +17,7 @@ plot(goal(1),goal(2));
 % Create the PRM object
 prm=mobileRobotPRM(map,200);%200 nodes
 
-% Find a path using PRM
+%% Find a path using PRM
 path= findpath(prm,start,goal);
 
 % Check if a path is found
@@ -37,13 +36,13 @@ smooth = optimizePath(path, map, options);
 plot(smooth(:,1), smooth(:,2),'r--','LineWidth',2);
 legend("","","PRM", "Smoothed Path");
 
-% Define the kinematic parameters of the robot
+%% Define the kinematic parameters of the robot
 r= differentialDriveKinematics("TrackWidth",0.5,"VehicleInputs","VehicleSpeedHeadingRate");
 r.WheelSpeedRange = [-10 10]*2*pi;
 %t=0:0.1:1000;
 init=[start,0];%initial conditions
 
-% Path following controller
+%% Path following controller
 controller= controllerPurePursuit('DesiredLinearVelocity', 1, 'MaxAngularVelocity', 2);
 controller.Waypoints = [smooth(:,1) smooth(:,2)]; % path;
 controller.LookaheadDistance = 0.5;% 0.5;
@@ -57,7 +56,8 @@ plot(goal(1),goal(2),'ro','MarkerSize', 10, 'LineWidth', 2); % Goal point
 plot(smooth(:,1), smooth(:,2),'r--','LineWidth',2);
 tic %to calculate elapsed time
 
-% Simulate the robot motion
+%% Simulate the robot motion
+
 i= 1;
 while (1)
     [v,omega] = controller(pose(i,:)); % Compute the controller outputs
@@ -81,3 +81,7 @@ while (1)
 end
 plot(pose(end,1), pose(end,2),'bx', 'MarkerSize', 10,'LineWidth',1.3);% Plot the final position of the robot
 toc %end of time
+
+%% Checking path length
+refPath = referencePathFrenet(smooth);
+pl = refPath.PathLength;
