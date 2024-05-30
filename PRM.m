@@ -1,4 +1,5 @@
-clear ; close all;
+clear;
+close all;
 
 % Define the map dimensions and obstacles
 load exampleMaps.mat;
